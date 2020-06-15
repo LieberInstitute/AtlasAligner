@@ -65,17 +65,14 @@ function edit(obj, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider,...
         set(scaleBox, 'Value', round(scaleSlider.Value));
         set(xShiftBox, 'Value', round(xShiftSlider.Value));
         set(yShiftBox, 'Value', round(yShiftSlider.Value));
-        set(scaleSlider, 'Value', round(scaleSlider.Value));
-        set(xShiftSlider, 'Value', round(xShiftSlider.Value));
-        set(yShiftSlider, 'Value', round(yShiftSlider.Value));
+        set(scaleBox, 'Value', round(scaleBox.Value));
+        set(xShiftBox, 'Value', round(xShiftBox.Value));
+        set(yShiftBox, 'Value', round(yShiftSlider.Value));
     elseif isa(obj, 'matlab.ui.control.NumericEditField')
         set(rotateSlider, 'Value', rotateSlider.Value);
         set(scaleSlider, 'Value', round(scaleBox.Value));
         set(xShiftSlider, 'Value', round(xShiftBox.Value));
         set(yShiftSlider, 'Value', round(yShiftBox.Value));
-        set(scaleBox, 'Value', round(scaleBox.Value));
-        set(xShiftBox, 'Value', round(xShiftBox.Value));
-        set(yShiftBox, 'Value', round(yShiftBox.Value));
     end
     
     left = round(xShiftSlider.Value);

@@ -1,6 +1,6 @@
 function main()
 
-    fig = uifigure('Name', 'Select Images', 'position', [360 198 400 400]);
+    fig = uifigure('Name', 'Atlas Aligner', 'position', [360 198 400 400]);
     uipanel(fig, 'position', [10 290 380 100], 'Title', 'Select image to be made square');
     uilabel(fig, 'position', [15 330 370 50], 'Text',...
         'In order to run this program, but the histology and atlas images must');
@@ -59,6 +59,15 @@ function getImagesToSquare(~, ~, fig)
         end
     end
     [imFile, imPath] = uigetfile(getIm, 'Select Image File(s)', 'MultiSelect', 'on');
+    if ischar(imPath)
+        ip = strrep(imPath, '\', '/');
+        fid = fopen(fullfile(homepath, 'atlas_paths', 'atlas_paths.txt'), 'w');
+        fprintf(fid, ip);
+        fclose(fid);
+        clear ip
+    else
+        error('Please select an image file.');
+    end
     if isa(imFile, 'cell')
         for i = 1:length(imFile)
             im1 = squareImage(fullfile(imPath, imFile{i}), fig);
@@ -94,6 +103,15 @@ function getImagesToSegment(~, ~, nRegions)
         end
     end
     [imFile, imPath] = uigetfile(getIm, 'Select Atlas Image File');
+    if ischar(imPath)
+        ip = strrep(imPath, '\', '/');
+        fid = fopen(fullfile(homepath, 'atlas_paths', 'atlas_paths.txt'), 'w');
+        fprintf(fid, ip);
+        fclose(fid);
+        clear ip
+    else
+        error('Please select an image file.');
+    end
     makeSubRegions(fullfile(imPath, imFile), ceil(nRegions));
 
 end
@@ -102,6 +120,7 @@ function getImagesToAlign(~, ~, overlayMask)
 
     com.mathworks.mwswing.MJFileChooserPerPlatform.setUseSwingDialog(1)
     getIm = '*.tiff;*.tif;*.png;*.jpg;*.jpeg';
+    getMat = '*.mat';
     if getenv('HOMEPATH')
         homepath = getenv('HOMEPATH');
     elseif getenv('HOME')
@@ -121,8 +140,26 @@ function getImagesToAlign(~, ~, overlayMask)
     end
     [imFile, imPath] = uigetfile(getIm, 'Select Histology Image File');
     [atlasFile, atlasPath] = uigetfile(getIm, 'Select Atlas Image File');
+    if ischar(imPath) & ischar(atlasPath)
+        ip = strrep(imPath, '\', '/');
+        fid = fopen(fullfile(homepath, 'atlas_paths', 'atlas_paths.txt'), 'w');
+        fprintf(fid, ip);
+        fclose(fid);
+        clear ip
+    else
+        error('Please select a histology and atlas image file.');
+    end
     if overlayMask.Value
         [maskFile, maskPath] = uigetfile(getMat, 'Select Mask File');
+        if ischar(maskPath)
+            ip = strrep(maskPath, '\', '/');
+            fid = fopen(fullfile(homepath, 'atlas_paths', 'atlas_paths.txt'), 'w');
+            fprintf(fid, ip);
+            fclose(fid);
+            clear ip
+        else
+            error('Please select a mask file.');
+        end
         maskPathFull = fullfile(maskPath, maskFile);
     else
         maskPathFull = '';

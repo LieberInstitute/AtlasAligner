@@ -1,4 +1,4 @@
-function atlas3 = shiftImage(atlas, left, bot, x, rot)
+function atlas3 = shiftImage(atlas, im, left, bot, x, rot)
 
     atlas1 = imrotate(atlas, rot);
     s = size(im);
