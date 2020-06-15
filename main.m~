@@ -63,9 +63,32 @@ function getImagesToSegment(~, ~, nRegions)
 
     com.mathworks.mwswing.MJFileChooserPerPlatform.setUseSwingDialog(1)
     getIm = '*.tiff;*.tif;*.png;*.jpg;*.jpeg';
-    getIm = getExt(getIm);
+    if getenv('HOMEPATH')
+        homepath = getenv('HOMEPATH');
+    elseif getenv('HOME')
+        homepath = getenv('HOME');
+    end
+    if ~exist(fullfile(homepath, 'atlas_paths'), 'dir')
+        mkdir(fullfile(homepath, 'atlas_paths'));
+    end
+    if exist(fullfile(homepath, 'atlas_paths.txt'), 'file')
+        try
+            pathinfo = fileread(fullfile(homepath, 'atlas_paths', 'atlas_paths.txt'));
+            pathinfo = regexp(pathinfo, '\n', 'split');
+            getIm = fullfile(pathinfo{1}, '*.tiff;*.tif;*.png;*.jpg;*.jpeg');
+        catch
+        end
+    end
     [imFile, imPath] = uigetfile(getIm, 'Select Atlas Image File');
-    setPath(imPath, 'Please select an image file.');
+    if ischar(imPath)
+        ip = strrep(imPath, '\', '/');
+        fid = fopen(fullfile(homepath, 'atlas_paths', 'atlas_paths.txt'), 'w');
+        fprintf(fid, ip);
+        fclose(fid);
+        clear ip
+    else
+        error('Please select an image file.');
+    end
     makeSubRegions(fullfile(imPath, imFile), ceil(nRegions));
 
 end
@@ -74,15 +97,46 @@ function getImagesToAlign(~, ~, overlayMask)
 
     com.mathworks.mwswing.MJFileChooserPerPlatform.setUseSwingDialog(1)
     getIm = '*.tiff;*.tif;*.png;*.jpg;*.jpeg';
-    getIm = getPath(getIm);
+    getMat = '*.mat';
+    if getenv('HOMEPATH')
+        homepath = getenv('HOMEPATH');
+    elseif getenv('HOME')
+        homepath = getenv('HOME');
+    end
+    if ~exist(fullfile(homepath, 'atlas_paths'), 'dir')
+        mkdir(fullfile(homepath, 'atlas_paths'));
+    end
+    if exist(fullfile(homepath, 'atlas_paths.txt'), 'file')
+        try
+            pathinfo = fileread(fullfile(homepath, 'atlas_paths', 'atlas_paths.txt'));
+            pathinfo = regexp(pathinfo, '\n', 'split');
+            getIm = fullfile(pathinfo{1}, '*.tiff;*.tif;*.png;*.jpg;*.jpeg');
+            getMat = fullfile(pathinfo{1}, '*.mat');
+        catch
+        end
+    end
     [imFile, imPath] = uigetfile(getIm, 'Select Histology Image File');
     [atlasFile, atlasPath] = uigetfile(getIm, 'Select Atlas Image File');
-    setPath(imPath, 'Please select a histology and atlas image file.');
+    if ischar(imPath) & ischar(atlasPath)
+        ip = strrep(imPath, '\', '/');
+        fid = fopen(fullfile(homepath, 'atlas_paths', 'atlas_paths.txt'), 'w');
+        fprintf(fid, ip);
+        fclose(fid);
+        clear ip
+    else
+        error('Please select a histology and atlas image file.');
+    end
     if overlayMask.Value
-        getMat = '*.mat';
-        getMat = getPath(getMat);
         [maskFile, maskPath] = uigetfile(getMat, 'Select Mask File');
-        setPath(maskPath, 'Please select a mask file.');
+        if ischar(maskPath)
+            ip = strrep(maskPath, '\', '/');
+            fid = fopen(fullfile(homepath, 'atlas_paths', 'atlas_paths.txt'), 'w');
+            fprintf(fid, ip);
+            fclose(fid);
+            clear ip
+        else
+            error('Please select a mask file.');
+        end
         maskPathFull = fullfile(maskPath, maskFile);
     else
         maskPathFull = '';
@@ -97,7 +151,7 @@ function getData(~, ~)
 
 end
 
-function getExt2 = getExt(getExt)
+function getExt2 = getPaths(getExt)
 
     if getenv('HOMEPATH')
         homepath = getenv('HOMEPATH');
@@ -118,7 +172,7 @@ function getExt2 = getExt(getExt)
 
 end
 
-function setPath(path, errMsg)
+function setPaths(path, errMsg)
 
     if ischar(path)
         ip = strrep(imPath, '\', '/');

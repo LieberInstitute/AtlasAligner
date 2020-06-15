@@ -173,7 +173,7 @@ function polyTool(~, ~, f, atlas, assignDialog, cmap, im, jumpDialog)
     assign = str2double(get(assignDialog, 'String'));
     mask = get(f, 'UserData');
     f2 = figure;
-    BW = roipoly(atlas);
+    BW = roipoly(atlas); 
     close(f2);
     mask(BW) = assign;
     [c,r] = find(mask==assign);
