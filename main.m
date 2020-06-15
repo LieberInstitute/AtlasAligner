@@ -23,11 +23,18 @@ function main()
         'Value', 10, 'Limits', [1 Inf]);
     segButton = uibutton(fig, 'position', [270 180 110 20], 'Text', 'Select Atlas Image',...
         'ButtonPushedFcn', {@getImagesToSegment, nRegionBox.Value});
-    uipanel(fig, 'position', [10 80 380 80], 'Title', 'Align atlas to histology image');
+    uipanel(fig, 'position', [10 90 380 70], 'Title', 'Align atlas to histology image');
     uilabel(fig, 'position', [15 100 370 50], 'Text',...
         'Select atlas image and histology image to align to.');
-    alignButton = uibutton(fig, 'position', [270 90 110 20], 'Text', 'Select Images',...
-        'ButtonPushedFcn', {@getImagesToAlign});
+    overlayMask = uicheckbox(fig, 'position', [100 95 150 20], 'Text',...
+        'Overlay labeled mask');
+    alignButton = uibutton(fig, 'position', [270 95 110 20], 'Text', 'Select Images',...
+        'ButtonPushedFcn', {@getImagesToAlign, overlayMask});
+    uipanel(fig, 'position', [10 15 380 70], 'Title', 'Apply saved shift to mask and assign spots to regions');
+    uilabel(fig, 'position', [15 25 370 50], 'Text',...
+        'Select mask, shift object and tissue position list.');
+    applyButton = uibutton(fig, 'position', [270 20 110 20], 'Text', 'Select Data',...
+        'ButtonPushedFcn', {@getData});
     
 end
 
@@ -91,7 +98,7 @@ function getImagesToSegment(~, ~, nRegions)
 
 end
 
-function getImagesToAlign(~, ~)
+function getImagesToAlign(~, ~, overlayMask)
 
     com.mathworks.mwswing.MJFileChooserPerPlatform.setUseSwingDialog(1)
     getIm = '*.tiff;*.tif;*.png;*.jpg;*.jpeg';
@@ -108,11 +115,24 @@ function getImagesToAlign(~, ~)
             pathinfo = fileread(fullfile(homepath, 'atlas_paths', 'atlas_paths.txt'));
             pathinfo = regexp(pathinfo, '\n', 'split');
             getIm = fullfile(pathinfo{1}, '*.tiff;*.tif;*.png;*.jpg;*.jpeg');
+            getMat = fullfile(pathinfo{1}, '*.mat');
         catch
         end
     end
     [imFile, imPath] = uigetfile(getIm, 'Select Histology Image File');
     [atlasFile, atlasPath] = uigetfile(getIm, 'Select Atlas Image File');
-    scaleAtlas(fullfile(imPath, imFile), fullfile(atlasPath, atlasFile));
+    if overlayMask.Value
+        [maskFile, maskPath] = uigetfile(getMat, 'Select Mask File');
+        maskPathFull = fullfile(maskPath, maskFile);
+    else
+        maskPathFull = '';
+    end
+    scaleAtlas(fullfile(imPath, imFile), fullfile(atlasPath, atlasFile), maskPathFull);
+
+end
+
+function getData(~, ~)
+
+
 
 end

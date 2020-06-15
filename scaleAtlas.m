@@ -1,7 +1,12 @@
-function scaleAtlas(imPathFull, atlasPathFull)
+function scaleAtlas(imPathFull, atlasPathFull, maskPathFull)
 
     im = imread(imPathFull);
     atlas = imread(atlasPathFull);
+    if maskPathFull
+        load(maskPathFull);
+        lmask = label2rgb(mask);
+        atlas = 0.5*lmask + 0.5*atlas;
+    end
     fig = uifigure('position', [50 50 1500 1000]);
     s = size(atlas);
     s = s(1:2);
