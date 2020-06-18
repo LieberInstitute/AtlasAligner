@@ -1,15 +1,29 @@
 function scaleAtlas(imPathFull, atlasPathFull, maskPathFull)
 
+    % This is a function to manipulate an atlas 
+
     im = imread(imPathFull);
     atlas = imread(atlasPathFull);
-    if maskPathFull
-        load(maskPathFull);
-        lmask = label2rgb(mask);
-        atlas = 0.5*lmask + 0.5*atlas;
-    end
+    
     fig = uifigure('position', [50 50 1500 1000]);
     s = size(atlas);
     s = s(1:2);
+    s2 = size(im);
+    if s(1) ~= s(2)
+        error('Atlas image must be square');
+    end
+    if s2(1) ~= s2(2) 
+        error('Histology image must be square');
+    end
+    if maskPathFull
+        load(maskPathFull);
+        s3 = size(mask);
+        if s3(1) ~= s(1) || s3(2) ~= s(2)
+            error('Mask and atlas must be the same size');
+        end
+        lmask = label2rgb(mask);
+        atlas = 0.5*lmask + 0.5*atlas;
+    end
     im1 = imresize(im, s);
     mix = 0.5*im1 + 0.5*atlas; 
     ax = uiaxes(fig, 'position', [50 50 900 900]);
@@ -70,7 +84,7 @@ function edit(obj, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider,...
         set(xShiftSlider, 'Value', round(xShiftSlider.Value));
         set(yShiftSlider, 'Value', round(yShiftSlider.Value));
     elseif isa(obj, 'matlab.ui.control.NumericEditField')
-        set(rotateSlider, 'Value', rotateSlider.Value);
+        set(rotateSlider, 'Value', rotateBox.Value);
         set(scaleSlider, 'Value', round(scaleBox.Value));
         set(xShiftSlider, 'Value', round(xShiftBox.Value));
         set(yShiftSlider, 'Value', round(yShiftBox.Value));
@@ -84,6 +98,9 @@ function edit(obj, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider,...
     x = round(scaleSlider.Value);
     rot = rotateSlider.Value;
     atlas1 = shiftImage(atlas, left, bot, x, rot);
+    size(atlas)
+    size(atlas1)
+    size(im)
     mix = 0.5*atlas1+0.5*im;
     set(h, 'CData', mix);
 
@@ -95,10 +112,13 @@ function applyAndAssign(~, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSli
     bot = round(yShiftSlider.Value);
     x = round(scaleSlider.Value);
     rot = rotateSlider.Value; 
-    atlas1 = shiftImage(atlas, left, bot, x, rot);
+    getMat = getExt('*.mat');
+    [maskFile, maskPath] = uigetfile(getIm, 'Select mask .MAT file');
+    load(fullfile(maskPath, maskFile));
+    shiftedMask = shiftImage(mask, left, bot, x, rot);
     s = size(im);
     s = s(1:2);
-    atlas1 = imresize(atlas1, s);
+    shiftedMask = imresize(shiftedMask, s);
     
 
 end
@@ -107,15 +127,21 @@ end
 function saveShifts(~, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider,...
     imPathFull, atlasPathFull)
 
-    s.left = round(xShiftSlider.Value);
-    s.bot = round(yShiftSlider.Value);
-    s.x = round(scaleSlider.Value);
-    s.rot = rotateSlider.Value; 
-    save([name '_mask.mat'], 'mask', '-v6');
+    shift.left = round(xShiftSlider.Value);
+    shift.bot = round(yShiftSlider.Value);
+    shift.x = round(scaleSlider.Value);
+    shift.rot = rotateSlider.Value; 
+    [~,imName,~] = fileparts(imPathFull);
+    [atlasPath,atlasName,~] = fileparts(atlasPathFull);
+    name = [atlasName '_to_' imName '_shift.mat'];
+    [name, path] = uiputfile(fullfile(atlasPath, name));
+    save(fullfile(path, name), 'shift', '-v6');
 
 end
 
-function getExt2 = getPaths(getExt)
+function getExt = getPath(getExt)
+
+    % This is a function to get the 
 
     if getenv('HOMEPATH')
         homepath = getenv('HOMEPATH');
@@ -125,11 +151,11 @@ function getExt2 = getPaths(getExt)
     if ~exist(fullfile(homepath, 'atlas_paths'), 'dir')
         mkdir(fullfile(homepath, 'atlas_paths'));
     end
-    if exist(fullfile(homepath, 'atlas_paths2.txt'), 'file')
+    if exist(fullfile(homepath, 'atlas_paths', 'atlas_paths.txt'), 'file')
         try
-            pathinfo = fileread(fullfile(homepath, 'atlas_paths', 'atlas_paths2.txt'));
+            pathinfo = fileread(fullfile(homepath, 'atlas_paths', 'atlas_paths.txt'));
             pathinfo = regexp(pathinfo, '\n', 'split');
-            getExt2 = fullfile(pathinfo{1}, getExt);
+            getExt = fullfile(pathinfo{1}, getExt);
         catch
         end
     end

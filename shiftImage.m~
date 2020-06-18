@@ -1,8 +1,11 @@
  function atlas2 = shiftImage(atlas, left, bot, x, rot)
 
-    s1 = size(atlas);
-    s1 = s1(1:2);
+    s = size(atlas);
+    s = s(1:2);
     atlas1 = imrotate(atlas, rot);
+    atlas1 = 
+    s1 = size(atlas1);
+    s1 = s1(1:2);
     s2 = s1+x;
     atlas2 = imresize(atlas1, s2);
     
@@ -28,15 +31,15 @@
         %do nothing
     elseif bot <= 0 
         atlas2 = atlas2(1:end+bot, :, :);
-        z_top = zeros(-x-bot, s1(1), 3);
+        z_top = zeros(-x-bot, s(1), 3);
         atlas2 = [z_top; atlas2];
     elseif bot <= -x
-        z_top = zeros(-x-bot, s1(1), 3);
-        z_bot = zeros(bot, s1(1), 3);
+        z_top = zeros(-x-bot, s(1), 3);
+        z_bot = zeros(bot, s(1), 3);
         atlas2 = [z_top; atlas2; z_bot];
     else
         atlas2 = atlas2(bot+x+1:end, :, :);
-        z_bot = zeros(bot, s1(1), 3);
+        z_bot = zeros(bot, s(1), 3);
         atlas2 = [atlas2; z_bot];
     end
 

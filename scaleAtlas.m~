@@ -51,9 +51,10 @@ function scaleAtlas(imPathFull, atlasPathFull, maskPathFull)
     yShiftBox.ValueChangedFcn = {@edit, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider,...
         rotateBox, scaleBox, xShiftBox, yShiftBox, im1, atlas, h};
     applyButton = uibutton(fig, 'position', [1200 20 250 20], 'Text', 'Apply shift to mask and assign spot regions',...
-        'ButtonPushedFcn', {@applyAndAssign, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider});
+        'ButtonPushedFcn', {@applyAndAssign, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider, im});
     saveButton = uibutton(fig, 'position', [100 20 150 20], 'Text', 'Apply shift to mask and assign spot regions',...
-        'ButtonPushedFcn', {@saveShifts, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider});
+        'ButtonPushedFcn', {@saveShifts, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider,...
+        imPathFull, atlasPathFull});
        
 end
 
@@ -82,27 +83,62 @@ function edit(obj, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider,...
     bot = round(yShiftSlider.Value);
     x = round(scaleSlider.Value);
     rot = rotateSlider.Value;
-    atlas1 = shiftImage(atlas, im, left, bot, x, rot);
+    atlas1 = shiftImage(atlas, left, bot, x, rot);
     mix = 0.5*atlas1+0.5*im;
     set(h, 'CData', mix);
 
 end
 
-function applyAndAssign(~, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider)
+function applyAndAssign(~, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider, im)
 
     left = round(xShiftSlider.Value);
     bot = round(yShiftSlider.Value);
     x = round(scaleSlider.Value);
-    rot = rotateSlider.Value;
+    rot = rotateSlider.Value; 
+    atlas1 = shiftImage(atlas, left, bot, x, rot);
+    s = size(im);
+    s = s(1:2);
+    atlas1 = imresize(atlas1, s);
+    
 
 end
 
 
-function saveShifts(~, ~)
+function saveShifts(~, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider,...
+    imPathFull, atlasPathFull)
 
-
-
+    shift.left = round(xShiftSlider.Value);
+    shift.bot = round(yShiftSlider.Value);
+    shift.x = round(scaleSlider.Value);
+    shift.rot = rotateSlider.Value; 
+    [~,imName,~] = fileparts(imPathFull);
+    [~,atlasName,~] = fileparts(atlasPathFull);
+    name = [atlasName '_to_' imName '_shift'];
+    save([name '_mask.mat'], 'mask', '-v6');
 
 end
+
+function getExt2 = getPaths(getExt)
+
+    if getenv('HOMEPATH')
+        homepath = getenv('HOMEPATH');
+    elseif getenv('HOME')
+        homepath = getenv('HOME');
+    end
+    if ~exist(fullfile(homepath, 'atlas_paths'), 'dir')
+        mkdir(fullfile(homepath, 'atlas_paths'));
+    end
+    if exist(fullfile(homepath, 'atlas_paths2.txt'), 'file')
+        try
+            pathinfo = fileread(fullfile(homepath, 'atlas_paths', 'atlas_paths2.txt'));
+            pathinfo = regexp(pathinfo, '\n', 'split');
+            getExt2 = fullfile(pathinfo{1}, getExt);
+        catch
+        end
+    end
+
+end
+
+
 
 

@@ -1,5 +1,7 @@
 function im1 = squareImage(imPathFull, fig)
 
+    [~,~,ext] = fileparts(imPathFull);
+
     im = imread(imPathFull);
 
     imSize = size(im);
