@@ -65,8 +65,8 @@ function scaleAtlas(imPathFull, atlasPathFull, maskPathFull)
     yShiftBox.ValueChangedFcn = {@edit, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider,...
         rotateBox, scaleBox, xShiftBox, yShiftBox, im1, atlas, h};
     applyButton = uibutton(fig, 'position', [1200 20 250 20], 'Text', 'Apply shift to mask and assign spot regions',...
-        'ButtonPushedFcn', {@applyAndAssign, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider, im});
-    saveButton = uibutton(fig, 'position', [100 20 150 20], 'Text', 'Apply shift to mask and assign spot regions',...
+        'ButtonPushedFcn', {@applyAndAssign, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider, im, fig});
+    saveButton = uibutton(fig, 'position', [100 20 150 20], 'Text', 'Save shift object',...
         'ButtonPushedFcn', {@saveShifts, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider,...
         imPathFull, atlasPathFull});
        
@@ -106,19 +106,41 @@ function edit(obj, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider,...
 
 end
 
-function applyAndAssign(~, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider, im)
+function applyAndAssign(~, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider, im, fig)
 
     left = round(xShiftSlider.Value);
     bot = round(yShiftSlider.Value);
     x = round(scaleSlider.Value);
     rot = rotateSlider.Value; 
-    getMat = getExt('*.mat');
-    [maskFile, maskPath] = uigetfile(getIm, 'Select mask .MAT file');
+    getMat = getPath('*.mat');
+    [maskFile, maskPath] = uigetfile(getMat, 'Select mask .MAT file');
     load(fullfile(maskPath, maskFile));
     shiftedMask = shiftImage(mask, left, bot, x, rot);
     s = size(im);
     s = s(1:2);
     shiftedMask = imresize(shiftedMask, s);
+    [~,maskName,~] = fileparts(maskFile);
+    getTbl = getPath('*.csv;*.txt');
+    [tpFile, tpPath] = uigetfile(getTbl, 'Select tissue positions list file');
+    tissuePositions = readtable(fullfile(tpPath, tpFile));
+    if size(tissuePositions, 2) > 6
+        aFig = uifigure('Name', 'Append or overwrite?',...
+            'position', [360 198 320 100]); 
+        appendButton = uibutton(aFig, 'position', [50 40 100 20],...
+            'Text', 'Append', 'ButtonPushedFcn',... 
+            {@append, shiftedMask, tissuePositions, maskName, fig, aFig});
+        overwriteButton = uibutton(aFig, 'position', [170 40 100 20],...
+            'Text', 'Overwrite', 'ButtonPushedFcn',... 
+            {@overwrite, shiftedMask, tissuePositions, maskName, fig, aFig});
+        uiwait(aFig);
+        tissuePositions = get(fig, 'UserData');
+    else
+        tissuePositions = assignSpots(shiftedMask, tissuePositions, maskName, false);
+    end
+    [~,name,~] = fileparts(tpFile);
+    name = [name '_regions.csv'];
+    [name, path] = uiputfile(fullfile(tpPath, name));
+    writetable(tissuePositions, fullfile(path, name));
     
 
 end
@@ -136,6 +158,22 @@ function saveShifts(~, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider,
     name = [atlasName '_to_' imName '_shift.mat'];
     [name, path] = uiputfile(fullfile(atlasPath, name));
     save(fullfile(path, name), 'shift', '-v6');
+
+end
+
+function append(~, shiftedMask, tissuePositions, maskName, fig, aFig)
+
+    tissuePositions = assignSpots(shiftedMask, tissuePositions, maskName, true);
+    set(fig, 'UserData', tissuePositions);
+    close(aFig);
+
+end
+
+function overwrite(~, shiftedMask, tissuePositions, maskName, fig, aFig)
+
+    tissuePositions = assignSpots(shiftedMask, tissuePositions, maskName, false);
+    set(fig, 'UserData', tissuePositions);
+    close(aFig);
 
 end
 
@@ -161,6 +199,8 @@ function getExt = getPath(getExt)
     end
 
 end
+
+
 
 
 
