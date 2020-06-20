@@ -98,9 +98,6 @@ function edit(obj, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider,...
     x = round(scaleSlider.Value);
     rot = rotateSlider.Value;
     atlas1 = shiftImage(atlas, left, bot, x, rot);
-    size(atlas)
-    size(atlas1)
-    size(im)
     mix = 0.5*atlas1+0.5*im;
     set(h, 'CData', mix);
 
@@ -118,7 +115,7 @@ function applyAndAssign(~, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSli
     shiftedMask = shiftImage(mask, left, bot, x, rot);
     s = size(im);
     s = s(1:2);
-    shiftedMask = imresize(shiftedMask, s);
+    shiftedMask = imresize(shiftedMask, s, 'Method', 'nearest');
     [~,maskName,~] = fileparts(maskFile);
     getTbl = getPath('*.csv;*.txt');
     [tpFile, tpPath] = uigetfile(getTbl, 'Select tissue positions list file');
@@ -140,7 +137,8 @@ function applyAndAssign(~, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSli
     [~,name,~] = fileparts(tpFile);
     name = [name '_regions.csv'];
     [name, path] = uiputfile(fullfile(tpPath, name));
-    writetable(tissuePositions, fullfile(path, name));
+    writetable(tissuePositions, fullfile(path, name),...
+        'WriteVariableNames', false, 'Delimiter', ',');
     
 
 end
@@ -161,7 +159,7 @@ function saveShifts(~, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSlider,
 
 end
 
-function append(~, shiftedMask, tissuePositions, maskName, fig, aFig)
+function append(~, ~, shiftedMask, tissuePositions, maskName, fig, aFig)
 
     tissuePositions = assignSpots(shiftedMask, tissuePositions, maskName, true);
     set(fig, 'UserData', tissuePositions);
@@ -169,7 +167,7 @@ function append(~, shiftedMask, tissuePositions, maskName, fig, aFig)
 
 end
 
-function overwrite(~, shiftedMask, tissuePositions, maskName, fig, aFig)
+function overwrite(~, ~, shiftedMask, tissuePositions, maskName, fig, aFig)
 
     tissuePositions = assignSpots(shiftedMask, tissuePositions, maskName, false);
     set(fig, 'UserData', tissuePositions);

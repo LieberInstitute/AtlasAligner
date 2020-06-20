@@ -27,7 +27,7 @@ function makeSubRegions(atlasPathFull, nRegions)
     assignDown.Callback = {@assignDownFcn, assignUp, assignDialog, nRegions};
     assignUp.Callback = {@assignUpFcn, assignDown, assignDialog, nRegions};
     uipanel('units', 'normalized', 'position', [0.28 0.005 0.18 0.045], 'Title', 'Dilation');
-    jumpDialog = uicontrol('Style', 'edit', 'units', 'normalized', 'position', [0.335 0.01 0.06 0.02], 'String', 0);
+    jumpDialog = uicontrol('Style', 'edit', 'units', 'normalized', 'position', [0.335 0.01 0.06 0.02], 'String', 1);
     jumpDown = uicontrol('Style', 'push', 'units', 'normalized', 'position', [0.285 0.01 0.03 0.02], 'String', '-');
     jumpUp = uicontrol('Style', 'push', 'units', 'normalized', 'position', [0.415 0.01 0.03 0.02], 'String', '+');
     jump = str2double(get(jumpDialog, 'String'));
