@@ -251,8 +251,6 @@ function saveManual(~, ~, f, name)
 
     mask = get(f, 'UserData');
     mask(mod(mask,1)~=0) = 0;
-    %se = strel('disk', 10);
-    %mask = imdilate(mask, se);
     mask = imfill(mask, 'holes');
     name = [name '_mask.mat'];
     [name, path] = uiputfile(name);
