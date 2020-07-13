@@ -154,7 +154,7 @@ function applyAndAssign(~, ~, rotateSlider, scaleSlider, xShiftSlider, yShiftSli
     % xShiftSlider: slider object for x shift
     % yShiftSlider: slider object for y shift
     % im: original histology image
-    % fig: main GUI figure
+    % fig: GUI figure object (to save results)
 
     % store slider values
     left = round(xShiftSlider.Value);
@@ -251,57 +251,34 @@ function append(~, ~, shiftedMask, tissuePositions, maskName, fig, aFig)
     % shiftedMask: shifted labeled mask
     % tissuePositions: table object of tissue positions list
     % maskName: name of labeled mask
-    % fig: GUI figure
-    % aFig: append or overwrite figure
-    
-    % assign spots with append set to true
+    % fig: GI
+
     tissuePositions = assignSpots(shiftedMask, tissuePositions, maskName, true);
-    % set main figure GUI data to new tissuePositions table
     set(fig, 'UserData', tissuePositions);
-    % close the append or overwrite figure
     close(aFig);
 
 end
 
 function overwrite(~, ~, shiftedMask, tissuePositions, maskName, fig, aFig)
 
-    % This is a callback function to apply atlas shifting and assign spots
-    % when append option is selected
-    % Inputs:
-    % shiftedMask: shifted labeled mask
-    % tissuePositions: table object of tissue positions list
-    % maskName: name of labeled mask
-    % fig: GUI figure
-    % aFig: append or overwrite figure
-
-    % assign spots with append set to false
     tissuePositions = assignSpots(shiftedMask, tissuePositions, maskName, false);
-    % set main figure GUI data to new tissuePositions table
     set(fig, 'UserData', tissuePositions);
-    % close the append or overwrite figure
     close(aFig);
 
 end
 
 function getExt = getPath(getExt)
 
-    % This is a function to get the previous path accessed from this
-    % application and append the extension(s) for a uigetfile call
+    % This is a function to get the 
 
-    % get HOMEPATH environment variable (Windows)
     if getenv('HOMEPATH')
         homepath = getenv('HOMEPATH');
-    % if HOMEPATH doesn't exist, get HOME environment variable (Unix)
     elseif getenv('HOME')
         homepath = getenv('HOME');
     end
-    % Make atlas_paths directory in the HOMEPATH/HOME directory if it
-    % doesn't already exist
     if ~exist(fullfile(homepath, 'atlas_paths'), 'dir')
         mkdir(fullfile(homepath, 'atlas_paths'));
     end
-    % If atlas_paths.txt exists in the atlas_paths directory, read the path
-    % from that text file
     if exist(fullfile(homepath, 'atlas_paths', 'atlas_paths.txt'), 'file')
         try
             pathinfo = fileread(fullfile(homepath, 'atlas_paths', 'atlas_paths.txt'));
